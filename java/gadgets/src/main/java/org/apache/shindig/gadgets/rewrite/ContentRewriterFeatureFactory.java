@@ -18,10 +18,14 @@
 package org.apache.shindig.gadgets.rewrite;
 
 import org.apache.shindig.common.uri.Uri;
+import org.apache.shindig.common.ContainerConfig;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.GadgetSpecFactory;
 import org.apache.shindig.gadgets.http.HttpRequest;
 import org.apache.shindig.gadgets.spec.GadgetSpec;
+import org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -30,6 +34,8 @@ import com.google.inject.name.Named;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Factory for content rewriter features
@@ -38,36 +44,34 @@ import java.util.Set;
 public class ContentRewriterFeatureFactory {
 
   private final GadgetSpecFactory specFactory;
-  private final String includeUrls;
-  private final String excludeUrls;
-  private final String expires;
-  private final Set<String> includeTags;
 
-  private ContentRewriterFeature defaultFeature;
+//  private ContentRewriterFeature defaultFeature;
+
+  private Map<String, ContentRewriterFeature> contentRewriters;
+
+  static final String CONTENT_REWRITE_KEY = "gadgets.content-rewrite";
+  static final String INCLUDE_TAGS_KEY = "include-tags";
+  static final String INCLUDE_URLS_KEY = "include-urls";
+  static final String EXCLUDE_TAGS_KEY = "exclude-urls";
+  static final String EXPIRES_KEY = "expires";
+
+  private final ContainerConfig config;
 
   @Inject
   public ContentRewriterFeatureFactory(
       GadgetSpecFactory specFactory,
-      @Named("shindig.content-rewrite.include-urls")String includeUrls,
-      @Named("shindig.content-rewrite.exclude-urls")String excludeUrls,
-      @Named("shindig.content-rewrite.expires")String expires,
-      @Named("shindig.content-rewrite.include-tags")String includeTags) {
+      ContainerConfig config) {
+    this.config = config;
     this.specFactory = specFactory;
-    this.includeUrls = includeUrls;
-    this.excludeUrls = excludeUrls;
-    this.expires = expires;
-    this.includeTags = new HashSet<String>();
-    for (String s : includeTags.split(",")) {
-      if (s != null && s.trim().length() > 0) {
-        this.includeTags.add(s.trim().toLowerCase());
-      }
-    }
-    defaultFeature = new ContentRewriterFeature(null, includeUrls, excludeUrls, expires,
-        this.includeTags);
+
+    contentRewriters = new HashMap<String, ContentRewriterFeature>();
   }
 
-  public ContentRewriterFeature getDefault() {
-    return defaultFeature;
+  public ContentRewriterFeature getDefault(String container) {
+    if (!contentRewriters.containsKey(container)) {
+      contentRewriters.put(container, createContentRewriterFeature(null, container));
+    }
+    return contentRewriters.get(container);
   }
 
   public ContentRewriterFeature get(HttpRequest request) {
@@ -78,21 +82,39 @@ public class ContentRewriterFeatureFactory {
       try {
         spec = specFactory.getGadgetSpec(gadgetJavaUri, false);
         if (spec != null) {
-          return get(spec);
+          return get(spec, request.getContainer());
         }
-      } catch (GadgetException ge) {
-        return defaultFeature;
-      }
+      } catch (GadgetException ge) { }
     }
-    return defaultFeature;
+    return getDefault(request.getContainer());
   }
 
-  public ContentRewriterFeature get(GadgetSpec spec) {
+  private ContentRewriterFeature createContentRewriterFeature(GadgetSpec spec, String container) {
+    try {
+    JSONObject contentRewrite = config.getJsonObject(container, CONTENT_REWRITE_KEY);
+
+    JSONArray jsonTags = contentRewrite.getJSONArray(INCLUDE_TAGS_KEY);
+    Set<String> tags = new HashSet<String>();
+    for (int i = 0, j = jsonTags.length(); i < j; ++i) {
+      tags.add(jsonTags.getString(i).toLowerCase());
+    }
+
+    return new ContentRewriterFeature(spec,
+        contentRewrite.getString(INCLUDE_URLS_KEY),
+        contentRewrite.getString(EXCLUDE_TAGS_KEY),
+        contentRewrite.getString(EXPIRES_KEY),
+        tags);
+    } catch(JSONException e){
+      return null;
+    }
+  }
+
+
+  public ContentRewriterFeature get(GadgetSpec spec, String container) {
     ContentRewriterFeature rewriterFeature =
         (ContentRewriterFeature)spec.getAttribute("content-rewriter");
     if (rewriterFeature != null) return rewriterFeature;
-    rewriterFeature
-        = new ContentRewriterFeature(spec, includeUrls, excludeUrls, expires, includeTags);
+    rewriterFeature = createContentRewriterFeature(spec,  container);
     spec.setAttribute("content-rewriter", rewriterFeature);
     return rewriterFeature;
   }

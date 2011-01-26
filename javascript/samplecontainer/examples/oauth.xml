@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Module>
   <ModulePrefs title="Demo OAuth Gadget">
+	  <Require feature="opensocial-0.7"/>
     <OAuth>
-      <Service>
-        <Request url="http://localhost:9090/oauth-provider/request_token" />
-        <Access url="http://localhost:9090/oauth-provider/access_token" />
-        <Authorization url="http://localhost:9090/oauth-provider/authorize?oauth_callback=http://localhost:8080/gadgets/oauthcallback" />
+      <Service name="demo">
+        <Request url="http://localhost:9090/oauth-provider/request_token" method="GET" />
+        <Access url="http://localhost:9090/oauth-provider/access_token" method="GET" />
+        <Authorization url="http://localhost:9090/oauth-provider/authorize?oauth_callback=http://localhost:8080/gadgets/oauthcallback" method="GET" />
       </Service>
     </OAuth>
-    <Preload authz="oauth" href="http://localhost:9090/oauth-provider/echo" />
+    <!--Preload authz="oauth" href="http://localhost:9090/oauth-provider/echo" /-->
   </ModulePrefs>
   <Content type="html">
       <![CDATA[
@@ -64,7 +65,8 @@
           gadgets.io.AuthorizationType.OAUTH;
         params[gadgets.io.RequestParameters.METHOD] =
           gadgets.io.MethodType.GET;
-
+		params[gadgets.io.RequestParameters.OAUTH_SERVICE_NAME] = "demo";
+	    
         gadgets.io.makeRequest(url, function (response) {
           var popup = null;
           if (response.oauthApprovalUrl) {

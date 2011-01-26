@@ -63,6 +63,6 @@ gadgets.Prefs.prototype.setArray = function(key, val) {
   for (var i = 0, j = val.length; i < j; ++i) {
     val[i] = val[i].replace(/\|/g, "%7C");
   }
-  gadgets.Prefs.setInternal_(key, val.join('|'));
+  this.set(key, val.join('|'));  
 };
 

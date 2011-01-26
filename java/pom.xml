@@ -23,7 +23,7 @@ under the License.
   <parent>
     <groupId>org.apache.shindig</groupId>
     <artifactId>shindig-project</artifactId>
-    <version>0.9-1-SNAPSHOT</version>
+    <version>0.8.1-1-r719456</version>
   </parent>
 
   <artifactId>shindig-parent</artifactId>

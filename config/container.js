@@ -85,6 +85,17 @@
 
 // Only configuration for required features will be used.
 // See individual feature.xml files for configuration details.
+
+"gadgets.content-rewrite" : {
+"include-urls": ".*",
+"exclude-urls": "",
+"include-tags": ["link", "script", "embed", "img", "style"],
+"expires": "86400",
+"proxy-url": "http://localhost:8080/gadgets/proxy?url=",
+"concat-url": "http://localhost:8080/gadgets/concat?"
+},
+
+
 "gadgets.features" : {
   "core.io" : {
     // Note: /proxy is an open proxy. Be careful how you expose this!

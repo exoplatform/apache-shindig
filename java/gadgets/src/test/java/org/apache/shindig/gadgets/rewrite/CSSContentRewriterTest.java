@@ -36,9 +36,9 @@ public class CSSContentRewriterTest extends BaseRewriterTestCase {
     super.setUp();
     ContentRewriterFeature overrideFeature =
         rewriterFeatureFactory.get(createSpecWithRewrite(".*", ".*exclude.*", "HTTP",
-            HTMLContentRewriter.TAGS));
+            HTMLContentRewriter.TAGS), DEFAULT_CONTAINER);
     ContentRewriterFeatureFactory factory = mockContentRewriterFeatureFactory(overrideFeature);
-    rewriter = new CSSContentRewriter(factory, DEFAULT_PROXY_BASE);
+    rewriter = new CSSContentRewriter(factory, new FakeContainerConfig());
   }
 
   public void testCssBasic() throws Exception {

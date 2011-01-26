@@ -207,7 +207,8 @@ public class JsonRpcHandler {
                   .put("showInDirectory", prefs.getShowInDirectory())
                   .put("singleton", prefs.getSingleton())
                   .put("scaling", prefs.getScaling())
-                  .put("scrolling", prefs.getScrolling());
+                  .put("scrolling", prefs.getScrolling())
+                  .put("description", prefs.getDescription());
         return gadgetJson;
       } catch (ProcessingException e) {
         throw new RpcException(context, e);

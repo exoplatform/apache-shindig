@@ -18,9 +18,12 @@
 package org.apache.shindig.gadgets.rewrite;
 
 import org.apache.shindig.common.uri.Uri;
+import org.apache.shindig.common.ContainerConfig;
 import org.apache.shindig.gadgets.Gadget;
 import org.apache.shindig.gadgets.http.HttpRequest;
 import org.apache.shindig.gadgets.http.HttpResponse;
+import org.json.JSONObject;
+import org.json.JSONException;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -31,13 +34,18 @@ import com.google.inject.name.Named;
 public class CSSContentRewriter implements ContentRewriter {
 
   private final ContentRewriterFeatureFactory rewriterFeatureFactory;
-  private final String proxyBaseNoGadget;
+
+  private final ContainerConfig config;
+
+  static final String CONTENT_REWRITE_KEY = "gadgets.content-rewrite";
+  static final String PROXY_URL_KEY = "proxy-url";
+
 
   @Inject
   public CSSContentRewriter(ContentRewriterFeatureFactory rewriterFeatureFactory,
-      @Named("shindig.content-rewrite.proxy-url")String proxyBaseNoGadget) {
+      ContainerConfig config) {
     this.rewriterFeatureFactory = rewriterFeatureFactory;
-    this.proxyBaseNoGadget = proxyBaseNoGadget;
+    this.config = config;
   }
 
   public RewriterResults rewrite(Gadget gadget, MutableContent content) {
@@ -51,13 +59,18 @@ public class CSSContentRewriter implements ContentRewriter {
     }
     ContentRewriterFeature feature = rewriterFeatureFactory.get(request);
     content.setContent(CssRewriter.rewrite(content.getContent(), request.getUri(),
-        createLinkRewriter(request.getGadget(), feature)));
+        createLinkRewriter(request.getGadget(), feature, request.getContainer())));
 
     return RewriterResults.cacheableIndefinitely();
   }
 
-  protected LinkRewriter createLinkRewriter(Uri gadgetUri, ContentRewriterFeature feature) {
-    return new ProxyingLinkRewriter(gadgetUri, feature, proxyBaseNoGadget);
+  protected LinkRewriter createLinkRewriter(Uri gadgetUri, ContentRewriterFeature feature, String container) {
+    JSONObject contentRewrite = config.getJsonObject(container, CONTENT_REWRITE_KEY);
+    try {
+      return new ProxyingLinkRewriter(gadgetUri, feature, contentRewrite.getString(PROXY_URL_KEY));
+    } catch (JSONException e) {
+      return null;
+    }
   }
 }
 

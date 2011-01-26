@@ -18,6 +18,7 @@
 package org.apache.shindig.gadgets.rewrite;
 
 import org.apache.shindig.common.PropertiesModule;
+import org.apache.shindig.common.ContainerConfig;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.gadgets.EasyMockTestCase;
 import org.apache.shindig.gadgets.Gadget;
@@ -29,14 +30,21 @@ import org.apache.shindig.gadgets.http.HttpResponseBuilder;
 import org.apache.shindig.gadgets.parse.GadgetHtmlParser;
 import org.apache.shindig.gadgets.parse.ParseModule;
 import org.apache.shindig.gadgets.spec.GadgetSpec;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONException;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.common.collect.Maps;
 
 import org.apache.commons.lang.StringUtils;
 
 import java.net.URI;
 import java.util.Set;
+import java.util.Map;
+import java.util.Collection;
+import java.util.Arrays;
 
 /**
  * Base class for testing content rewriting functionality
@@ -45,6 +53,7 @@ public abstract class BaseRewriterTestCase extends EasyMockTestCase {
   public static final Uri SPEC_URL = Uri.parse("http://www.example.org/dir/g.xml");
   public static final String DEFAULT_PROXY_BASE = "http://www.test.com/dir/proxy?url=";
   public static final String DEFAULT_CONCAT_BASE = "http://www.test.com/dir/concat?";
+  public static final String DEFAULT_CONTAINER = "shindig";
 
   protected Set<String> tags;
   protected ContentRewriterFeature defaultRewriterFeature;
@@ -57,9 +66,8 @@ public abstract class BaseRewriterTestCase extends EasyMockTestCase {
   @Override
   protected void setUp() throws Exception {
     super.setUp();
-    rewriterFeatureFactory = new ContentRewriterFeatureFactory(null, ".*", "", "HTTP",
-        "embed,img,script,link,style");
-    defaultRewriterFeature = rewriterFeatureFactory.getDefault();
+    rewriterFeatureFactory = new ContentRewriterFeatureFactory(null, new FakeContainerConfig());
+    defaultRewriterFeature = rewriterFeatureFactory.getDefault(DEFAULT_CONTAINER);
     tags = defaultRewriterFeature.getIncludedTags();
     defaultLinkRewriter = new ProxyingLinkRewriter(
         SPEC_URL,
@@ -140,18 +148,60 @@ public abstract class BaseRewriterTestCase extends EasyMockTestCase {
     private final ContentRewriterFeature feature;
 
     public FakeRewriterFeatureFactory(ContentRewriterFeature feature) {
-      super(null, ".*", "", "HTTP", "");
+      super(null, new FakeContainerConfig());
       this.feature = feature;
     }
 
     @Override
-    public ContentRewriterFeature get(GadgetSpec spec) {
+    public ContentRewriterFeature get(GadgetSpec spec, String container) {
       return feature;
     }
 
     @Override
     public ContentRewriterFeature get(HttpRequest request) {
       return feature;
+    }
+  }
+
+  protected static class FakeContainerConfig implements ContainerConfig {
+    private final Map<String, String> properties = Maps.newHashMap();
+
+    public String get(String container, String property) {
+      return properties.get(property);
+    }
+
+    public Collection<String> getContainers() {
+      return null;
+    }
+
+    public Object getJson(String container, String parameter) {
+      return null;
+    }
+
+    public JSONArray getJsonArray(String container, String parameter) {
+      return null;
+    }
+
+    public JSONObject getJsonObject(String container, String parameter) {
+      if (parameter.equals("gadgets.content-rewrite")) {
+        try {
+        JSONObject jsonObject = new JSONObject();
+        JSONArray tags = new JSONArray();
+        tags.put("embed");
+        tags.put("img");
+        tags.put("script");
+        tags.put("link");
+        tags.put("style");
+        jsonObject.put("include-tags", tags);
+        jsonObject.put("include-urls", ".*");
+        jsonObject.put("exclude-urls", "");
+        jsonObject.put("expires", "HTTP");
+        jsonObject.put("proxy-url", "http://www.test.com/dir/proxy?url=");
+        jsonObject.put("concat-url", "http://www.test.com/dir/concat?");
+        return jsonObject;
+        } catch (JSONException e) {}
+      }
+      return null;
     }
   }
 }
