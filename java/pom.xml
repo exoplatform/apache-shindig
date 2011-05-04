@@ -23,7 +23,7 @@ under the License.
   <parent>
     <groupId>org.apache.shindig</groupId>
     <artifactId>shindig-project</artifactId>
-    <version>trunk-r719456-eXo02</version>
+    <version>trunk-r719456-eXo03</version>
   </parent>
 
   <artifactId>shindig-parent</artifactId>

@@ -28,7 +28,7 @@
 
   <groupId>org.apache.shindig</groupId>
   <artifactId>shindig-project</artifactId>
-  <version>trunk-r719456-eXo02</version>
+  <version>trunk-r719456-eXo03</version>
   <packaging>pom</packaging>
 
   <name>Apache Shindig Project</name>
@@ -324,13 +324,13 @@
         <dependency>
           <groupId>org.apache.shindig</groupId>
           <artifactId>shindig-gadgets</artifactId>
-          <version>trunk-r719456-eXo02</version>
+          <version>trunk-r719456-eXo03</version>
         </dependency>
 
         <dependency>
           <groupId>org.apache.shindig</groupId>
           <artifactId>shindig-social-api</artifactId>
-          <version>trunk-r719456-eXo02</version>
+          <version>trunk-r719456-eXo03</version>
         </dependency>
 
         <!-- external dependencies -->
@@ -877,27 +877,27 @@
       <dependency>
         <groupId>org.apache.shindig</groupId>
         <artifactId>shindig-features</artifactId>
-        <version>trunk-r719456-eXo02</version>
+        <version>trunk-r719456-eXo03</version>
       </dependency>
       <dependency>
         <groupId>org.apache.shindig</groupId>
         <artifactId>shindig-common</artifactId>
-        <version>trunk-r719456-eXo02</version>
+        <version>trunk-r719456-eXo03</version>
       </dependency>
       <dependency>
         <groupId>org.apache.shindig</groupId>
         <artifactId>shindig-gadgets</artifactId>
-        <version>trunk-r719456-eXo02</version>
+        <version>trunk-r719456-eXo03</version>
       </dependency>
       <dependency>
         <groupId>org.apache.shindig</groupId>
         <artifactId>shindig-server</artifactId>
-        <version>trunk-r719456-eXo02</version>
+        <version>trunk-r719456-eXo03</version>
       </dependency>
       <dependency>
         <groupId>org.apache.shindig</groupId>
         <artifactId>shindig-social-api</artifactId>
-        <version>trunk-r719456-eXo02</version>
+        <version>trunk-r719456-eXo03</version>
       </dependency>
 
       <!-- external dependencies -->
